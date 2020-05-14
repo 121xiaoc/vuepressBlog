@@ -6,11 +6,15 @@ module.exports = {
   ],
   base: '/', // 这是部署到github相关的配置
   markdown: {
-    lineNumbers: false // 代码块显示行号
+    lineNumbers: true // 代码块显示行号
   },
+  // head: [
+  //   ['meta', { name: 'theme-color', content: '#3eaf7c' }]
+  // ],
+  // theme: '@vuepress/vue',
   themeConfig: {
     nav:[ // 导航栏配置
-      {text: '前端基础', link: '/accumulate/' },
+      {text: '前端基础', link: '/front-base/' },
       {text: '算法题库', link: '/algorithm/'},
       {text: '微博', link: 'https://baidu.com'},
       { text: 'test', items: [
@@ -24,7 +28,8 @@ module.exports = {
       }      
     ],
     sidebar: {
-      '/blog/': getThemeSidebar('测试', '介绍')
+      '/blog/': getThemeSidebar('测试', '介绍'),
+      '/front-base/': getFrontBaseSidebar('前端基础', '介绍')
     }
   }
 };
@@ -37,6 +42,20 @@ function getThemeSidebar (groupA, introductionA) {
       sidebarDepth: 2,
       children: [
         ['', introductionA]
+      ]
+    }
+  ]
+}
+
+function getFrontBaseSidebar (groupA, introductionA) {
+  return [
+    {
+      title: groupA,
+      collapsable: false,
+      sidebarDepth: 2,
+      children: [
+        ['', introductionA],
+        ['source-code', '源码实现']
       ]
     }
   ]
