@@ -13,9 +13,31 @@ module.exports = {
       {text: '前端基础', link: '/accumulate/' },
       {text: '算法题库', link: '/algorithm/'},
       {text: '微博', link: 'https://baidu.com'},
-      { text: 'FristBlog', link: '/blog/FristBlog.md' }      
+      { text: 'test', items: [
+          {
+            text: '1', link: '/blog/',
+          },
+          {
+            text: '2', link: '/blog/second-blog.md',
+          }
+        ]
+      }      
     ],
-    sidebar: 'auto', // 侧边栏配置
-    sidebarDepth: 2, // 侧边栏显示2级
+    sidebar: {
+      '/blog/': getThemeSidebar('测试', '介绍')
+    }
   }
 };
+
+function getThemeSidebar (groupA, introductionA) {
+  return [
+    {
+      title: groupA,
+      collapsable: false,
+      sidebarDepth: 2,
+      children: [
+        ['', introductionA]
+      ]
+    }
+  ]
+}
