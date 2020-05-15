@@ -43,14 +43,28 @@ class MyPromise {
     typeof onReject !== 'function'
       && (onReject = val => val)
     if(this.status === RESOLVE) {
-      onResolve(this.value)
+      return new MyPromise((resolve) => {
+        const x = onResolve(this.value)
+        resolve(x)
+      })
     }
     if(this.status === REJECT) {
-      onReject(this.value)
+      return new MyPromise((resolve, reject) => {
+        const x = onReject(this.value)
+        reject(x)
+      })
     }
     if(this.status === PENDING) {
-      this.onResolveList.push(onResolve)
-      this.onRejectList.push(onReject)
+      return new MyPromise((resolve, reject) => {
+        this.onResolveList.push(() => {
+          const x = onResolve(this.value)
+          resolve(x)
+        })
+        this.onRejectList.push(() => {
+          const x = onReject(this.value)
+          reject(x)
+        })
+      }) 
     }
   }
 }

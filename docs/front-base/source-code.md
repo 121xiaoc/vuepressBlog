@@ -155,6 +155,135 @@ class MyPromise {
 
 ```
 
+#### 7. promise可以then多次,then会返回一个promise
+
+``` js
+class MyPromise {
+  then(onResolve, onReject) {
+    typeof onResolve !== 'function' 
+      && (onResolve = val => val)
+    typeof onReject !== 'function'
+      && (onReject = val => val)
+    if(this.status === RESOLVE) {
+      return new MyPromise((resolve) => {
+        onResolve(this.value)
+        resolve()
+      })
+    }
+    if(this.status === REJECT) {
+      return new MyPromise((resolve, reject) => {
+        onReject(this.value)
+        resolve()
+      })
+    }
+    if(this.status === PENDING) {
+      return new MyPromise((resolve, reject) => {
+        this.onResolveList.push(() => {
+          onResolve(this.value)
+          resolve()
+        })
+        this.onRejectList.push(() => {
+          onReject(this.value)
+          resolve()
+        })
+      }) 
+    }
+  }
+}
+```
+
+#### 8. 如果then返回的是一个值,就吧这个结果传递给下一个then,成功就传下一个then的resolve(),失败就传下一个then的reject()
+
+``` js
+class MyPromise {
+  then(onResolve, onReject) {
+    typeof onResolve !== 'function' 
+      && (onResolve = val => val)
+    typeof onReject !== 'function'
+      && (onReject = val => val)
+    if(this.status === RESOLVE) {
+      return new MyPromise((resolve) => {
+        const x = onResolve(this.value)
+        resolve(x)
+      })
+    }
+    if(this.status === REJECT) {
+      return new MyPromise((resolve, reject) => {
+        const x = onReject(this.value)
+        resolve(x)
+      })
+    }
+    if(this.status === PENDING) {
+      return new MyPromise((resolve, reject) => {
+        this.onResolveList.push(() => {
+          const x = onResolve(this.value)
+          resolve(x)
+        })
+        this.onRejectList.push(() => {
+          const x = onReject(this.value)
+          resolve(x)
+        })
+      }) 
+    }
+  }
+}
+```
+
+#### 9.如果上一个then返回的是promise,需要等待这个promise执行完,如果成功执行下一个then的reslve().失败执行下一个then的reject()
+
+``` js
+class MyPromise {
+  then(onResolve, onReject) {
+    typeof onResolve !== 'function' 
+      && (onResolve = val => val)
+    typeof onReject !== 'function'
+      && (onReject = val => val)
+    if(this.status === RESOLVE) {
+      return new MyPromise((resolve) => {
+        const x = onResolve(this.value)
+        resolve(x)
+      })
+    }
+    if(this.status === REJECT) {
+      return new MyPromise((resolve, reject) => {
+        const x = onReject(this.value)
+        resolve(x)
+      })
+    }
+    if(this.status === PENDING) {
+      return new MyPromise((resolve, reject) => {
+        this.onResolveList.push(() => {
+          const x = onResolve(this.value)
+          resolvePromise(x, resolve, reject)
+        })
+        this.onRejectList.push(() => {
+          const x = onReject(this.value)
+          resolvePromise(x, resolve, reject)
+        })
+      }) 
+    }
+  }
+}
+
+function resolvePromise(x, resolve, reject) {
+  if(x && typeof x === 'object') {
+    const then = x.then
+    if(typeof then === 'function') {
+      then.call(x, res => {
+        resolvePromise(res, resolve, reject)
+      }, res => {
+        reject()
+      })
+    } else {
+      resolve(x)
+    }
+  } else {
+    resolve(x)
+  }
+}
+```
+
+
 
 
 
