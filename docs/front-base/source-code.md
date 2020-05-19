@@ -283,6 +283,168 @@ function resolvePromise(x, resolve, reject) {
 }
 ```
 
+## 防抖、节流
+
+#### 防抖是N秒内只会执行一次，如果N秒内再次触发，则重新计算时间
+
+``` js
+function debounce (fn, delay) {
+  let timer = null
+  return function () {
+    timer && clearTimeout(timer)
+    const args = arguments
+    timer = setTimeout(() => {
+      fn.apply(this, args)
+    }, delay)
+  }
+}
+```
+
+#### 节流是N秒内就会执行一次，如果N秒内再次触发、不会重新计算
+
+``` js
+function throttle (fn, delay) {
+  let startTime = +new Date()
+  return function () {
+    const endTime = +new Date()
+    if(endTime - startTime > delay) {
+      fn.apply(this, arguments)
+    }
+  }
+}
+```
+
+::: tip
+将防抖和节流合一起
+:::
+
+``` js
+function throttle(fn, delay) {
+  const timer = null
+  let startTime = 0
+  return function () {
+    const endTime = +new Date()
+    const args = arguments
+    timer && clearTimeout(timer)
+    if(startTime && endTime - startTime < delay) {
+      timer = setTimeout(() => {
+        fn.apply(this, args)
+        startTime = +new Date()
+      }, delay)
+    } else {
+      fn.apply(this, args)
+      startTime = +new Date()
+    }
+  }
+}
+```
+
+## EventEmitter(发布订阅模式)
+
+最重要的两个功能on和emit
+
+```js
+class EventEmitter {
+  constructor () {
+    this.event = {}
+  }
+  on (type, callback) {
+    if(this.event[type]) {
+      this.event[type].push(callback)
+    } else {
+      this.event[type] = [callback]
+    }
+  }
+  emit (type, ...args) {
+    if(this.event[type]) {
+      this.event[type].forEach(item => {
+        item.apply(this, args)
+      })
+    }
+  }
+}
+```
+和移除的off事件
+
+``` js
+class EventEmitter {
+  off(type, callback) {
+    if(this.event[type]) {
+      this.event[type] = this.event[type].filter(item => {
+        return item != callback
+      })
+    }
+  }
+}
+```
+
+和once事件
+``` js
+class EventEmitter {
+  once(type, callback) {
+    function fn (...args) {
+      callback.apply(this, args)
+      this.off(type, fn)
+    }
+    this.on(type, fn)
+  }
+}
+```
+::: warning
+  once事件中,需要注意的是this.off中传入的是fn不是callback
+:::
+
+## call, apply, bind
+
+#### call
+1. context如果没有就是window
+2. 为context设置一个值fn,指向的就是this
+3. 然后传入参数
+4. 删除context上的fn
+```js
+Function.prototype.myCall = function(context, ...args) {
+  context = context || window
+  const symbol = Symbol()
+  context[symbol] = this
+  const result = context[symbol](...args)
+  delete context[symbol]
+  return result
+}
+
+```
+
+#### apply
+apply基本上与call相同, 只是传入的参数只取第一个
+``` js
+Function.prototype.myApply = function(context, args) {
+  context = context || window
+  const symbol = Symbol()
+  context[symbol] = this
+  const result = context[symbol](...args)
+  delete context[symbol]
+  return result
+}
+```
+
+#### bind
+bind返回一个方法
+```js
+Function.prototype.bind = function(context, ...args) {
+  context = context || window
+  const symbol = Symbol()
+  context[symbol] = this
+  return function(...args1) {
+    const result = context[symbol](...args, ...args1)
+    delete context[symbol]
+    return result
+  }
+}
+```
+
+
+
+
+
 
 
 
