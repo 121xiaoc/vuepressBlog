@@ -441,6 +441,19 @@ Function.prototype.bind = function(context, ...args) {
 }
 ```
 
+#### new 
+
+```js
+myNew(fn, ...args) {
+  const obj = {}
+  obj._prop_ = fn.prototype
+  const result = fn.apply(obj, args)
+  if((result && typeof result === 'object') || typeof result === 'function') {
+    return result
+  }
+  return obj
+}
+```
 
 
 

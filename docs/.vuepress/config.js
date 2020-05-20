@@ -55,7 +55,8 @@ function getFrontBaseSidebar (groupA, introductionA) {
       sidebarDepth: 2,
       children: [
         ['', introductionA],
-        ['source-code', '源码实现']
+        ['source-code', '源码实现'],
+        ['webpack-demo', 'webpack实践']
       ]
     }
   ]
