@@ -180,3 +180,12 @@ class myPromise {
   }
 }
 
+
+Promise.prototype.retry = function(index = 10) {
+  const self = this
+  let count = 0
+  return Promise((resolve, reject) => {
+    
+  })
+}
+

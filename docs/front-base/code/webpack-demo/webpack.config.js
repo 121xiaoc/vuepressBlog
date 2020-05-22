@@ -1,14 +1,16 @@
 // node 的基础模块 path
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const WebpackManifestPlugin = require('webpack-manifest-plugin')
+const webpack = require('webpack');
 module.exports = {
   // 入口文件
   entry: {
-    app: './src/demo2/index.js',
-    print: './src/demo2/print.js'
+    app: './src/demo5/index.js',
   },
   output: {
-    filename: '[name].bundle.js',
+    filename: '[name].bundle[hash].js',
     // 说明path必须是绝对路劲
     path: path.resolve(__dirname, 'dist')
   },
@@ -36,8 +38,17 @@ module.exports = {
     ]
   },
   plugins: [
+    new CleanWebpackPlugin(),
+    new WebpackManifestPlugin(),
     new HtmlWebpackPlugin({
       title: 'Output Management'
-    })
+    }),
+    new webpack.HotModuleReplacementPlugin()
   ],
+  devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist',
+    hot: true
+  },
+  mode: 'production'
 }
