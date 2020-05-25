@@ -375,3 +375,179 @@ module.exports = {
 ``` js
 npm install --save-dev extract-text-webpack-plugin
 ```
+/* 11:17 */
+## 7.代码分离
+### 利用入口起点文件分离代码
+创建一个other_module.js,为了和index.js引入相同的模块
+``` js
+import _ from 'lodash';
+
+console.log(
+  _.join(['Another', 'module', 'loaded!'], ' ')
+);
+```
+入口分离的原理就是创建一个新的入口
+webpack.common.js
+``` js
+module.exports = {
+  entry: {
+    app: './src/demo7/index.js',
+    another: './src/demo7/other_module.js'
+  }
+}
+```
+::: warning
+这种方法会导致一些问题
+1、如果入口chunks之间包含重复的模块,那这些重复的模块就会被引入各个bundle中
+2、不够灵活,并且不能将核心应用程序逻辑进行动态拆分代码(其实这个我不太懂)
+第一点无疑是个问题
+:::
+
+### 防止模块重复
+将已有入口chunk中提取公共的依赖模块,提取新生成的chunk
+#### entry depenencies
+``` js
+module.exports = {
+   entry: {
+    index: { import: './src/index.js', dependOn: 'shared' },
+    another: { import: './src/another-module.js', dependOn: 'shared' },
+    shared: 'lodash',
+    },
+}
+```
+::: error
+没有成功
+:::
+
+#### SplitChunksPlugin
+拆分代码
+webpack.prod.js 
+``` js
+module.exports = {
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+    },
+  }
+}
+```
+
+### 动态导入的进行拆分
+index.js
+``` js
+console.log(
+  import('lodash').then( _ => {
+    _.join(['Another', 'module', 'loaded!'], ' ')
+  })
+);
+```
+这样就可以生成一个独立出来的bundle
+
+webpack.common.js
+``` js
+module.exports = {
+  output: {
+    chunkFilename: '[name].bundle.js',
+  }
+}
+```
+可以对独立出来的bundle进行命名
+
+### 动态导入代码优化preload和prefetch
+[参考](https://www.jianshu.com/p/d2152789759d)
+<link rel="prefetch" ></link>
+这个资源将会在浏览器空闲时被下载 vue 中的话可以放到onMounted 感觉没啥用
+<link rel="preload" ></link>
+重要的资源,关键资源先下好
+
+
+### 分析工具
+webpack-bundle-analyzer
+
+#### 官方自带工具
+``` js
+webpack --profile --json > stats.json
+```
+#### webpack chart
+``` js
+https://alexkuz.github.io/webpack-chart/
+```
+####  webpack-visualizer: 
+安装
+``` js
+npm install --save-dev webpack-visualizer-plugin
+```
+
+webpack.prod.js
+``` js
+const Visualizer = require('webpack-visualizer-plugin')
+module.exports = {
+  plugins: [
+    new Visualizer()
+  ]
+}
+```
+
+#### BundleAnalyzerPlugin
+``` js
+npm install --save-dev webpack-bundle-analyzer
+```
+config.prod.js
+``` js
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+module.exports = {
+  plugins: [
+    new BundleAnalyzerPlugin()
+  ]
+}
+```
+
+## 8 利用缓存
+### 文件hash名
+防止文件内容变了还有缓存
+webpack.common.js
+``` js
+module.exports = {
+  filename: '[name].[contenthash].js',
+}
+```
+::: tip
+文件内容修改,打包后文件名跟着修改,hash值变化,这样文件就不会有缓存
+:::
+
+### 通用代码提取
+分为runtime生成的代码（老实说不知道为什么有提取出来,但官网写了）和第三方module
+
+#### runtime 生成的代码
+webpack.js
+``` js {3}
+module.exports = {
+  optimization: {
+    runtimeChunk: 'single'
+  }
+}
+```
+配置了这之后build就会生成一个runtime.b834744eb592e3e973fe.js,但其余文件没了hash值（解决办法在后面）（后台发现是因为设置了output的chunkFilename,设置了这个分出来的报包名字都以这个为准）
+
+#### 第三方库抽离出来
+第三方库一般不会发生变化,而每次去加载不太好,可以抽离出来成一个文件
+webpack.js
+``` js
+module.exports = {
+  optimization: {
+    vendor: {
+      test: /[\\/]node_modules[\\/]/,
+      name: 'vendors',
+      chunks: 'all'
+    }
+  }
+}
+```
+会生成一个name为vendors的包
+
+
+
+
+
+
+

@@ -3,15 +3,21 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 module.exports = {
   entry: {
-    app: './src/demo6/index.js'
+    index: './src/demo8/other_module.js',
   },
   output: {
-    filename: '[name].bundle[hash].js',
-    path: path.resolve(__dirname, 'dist')
+    filename: '[name].[contenthash].js',
+    path: path.resolve(__dirname, 'dist'),
+    // chunkFilename: '[name].[contenthash]bundle.js',
   },
   plugins: [
     new HtmlWebpackPlugin(),
     new CleanWebpackPlugin()
-  ]
+  ],
+  // optimization: {
+  //   splitChunks: {
+  //     chunks: 'all',
+  //   },
+  // }
 }
 
