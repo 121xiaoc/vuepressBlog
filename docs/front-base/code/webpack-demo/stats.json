@@ -1,0 +1,616 @@
+{
+  "errors": [],
+  "warnings": [],
+  "version": "4.43.0",
+  "hash": "6f87bf8efbd73162e1dc",
+  "time": 1106,
+  "builtAt": 1590131290563,
+  "publicPath": "",
+  "outputPath": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/dist",
+  "assetsByChunkName": {
+    "app": "app.bundle6f87bf8efbd73162e1dc.js"
+  },
+  "assets": [
+    {
+      "name": "app.bundle6f87bf8efbd73162e1dc.js",
+      "size": 66469,
+      "chunks": [
+        0
+      ],
+      "chunkNames": [
+        "app"
+      ],
+      "info": {
+        "immutable": true
+      },
+      "emitted": true
+    },
+    {
+      "name": "index.html",
+      "size": 232,
+      "chunks": [],
+      "chunkNames": [],
+      "info": {},
+      "emitted": true
+    },
+    {
+      "name": "manifest.json",
+      "size": 81,
+      "chunks": [],
+      "chunkNames": [],
+      "info": {},
+      "emitted": true
+    }
+  ],
+  "filteredAssets": 0,
+  "entrypoints": {
+    "app": {
+      "chunks": [
+        0
+      ],
+      "assets": [
+        "app.bundle6f87bf8efbd73162e1dc.js"
+      ],
+      "children": {},
+      "childAssets": {}
+    }
+  },
+  "namedChunkGroups": {
+    "app": {
+      "chunks": [
+        0
+      ],
+      "assets": [
+        "app.bundle6f87bf8efbd73162e1dc.js"
+      ],
+      "children": {},
+      "childAssets": {}
+    }
+  },
+  "chunks": [
+    {
+      "id": 0,
+      "rendered": true,
+      "initial": true,
+      "entry": true,
+      "size": 518,
+      "names": [
+        "app"
+      ],
+      "files": [
+        "app.bundle6f87bf8efbd73162e1dc.js"
+      ],
+      "hash": "a16ae35a584cc4259013",
+      "siblings": [],
+      "parents": [],
+      "children": [],
+      "childrenByOrder": {},
+      "modules": [
+        {
+          "id": 0,
+          "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js 6f175002944cc437c142c0b9e8b01f9f",
+          "name": "./src/demo5/index.js + 1 modules",
+          "index": 0,
+          "index2": 1,
+          "size": 518,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            0
+          ],
+          "issuer": null,
+          "issuerId": null,
+          "issuerName": null,
+          "issuerPath": null,
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": null,
+              "module": null,
+              "moduleName": null,
+              "type": "single entry",
+              "userRequest": "./src/demo5/index.js",
+              "loc": "app"
+            }
+          ],
+          "usedExports": true,
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 0,
+          "modules": [
+            {
+              "id": null,
+              "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+              "name": "./src/demo5/index.js",
+              "index": 0,
+              "index2": 1,
+              "size": 423,
+              "cacheable": true,
+              "built": true,
+              "optional": false,
+              "prefetched": false,
+              "chunks": [],
+              "issuer": null,
+              "issuerId": null,
+              "issuerName": null,
+              "issuerPath": null,
+              "profile": {
+                "factory": 54,
+                "building": 40
+              },
+              "failed": false,
+              "errors": 0,
+              "warnings": 0,
+              "assets": [],
+              "reasons": [
+                {
+                  "moduleId": null,
+                  "moduleIdentifier": null,
+                  "module": null,
+                  "moduleName": null,
+                  "type": "single entry",
+                  "userRequest": "./src/demo5/index.js",
+                  "loc": "app"
+                }
+              ],
+              "usedExports": true,
+              "providedExports": [],
+              "optimizationBailout": [
+                "ModuleConcatenation bailout: Module is an entry point"
+              ],
+              "depth": 0,
+              "source": "// import _ from 'lodash';\n// import printMe from './print.js';\nimport { cube, square } from './math.js';\n  function component() {\n    var element = document.createElement('div');\n    element.innerHTML = [\n      'Hello webpack!',\n      '5 cubed is equal to ' + cube(5),\n      '5 square is qqual to' + square(5)\n    ].join('\\n\\n');\n    console.log(11111111)\n    return element;\n  }\n\n  document.body.appendChild(component());"
+            },
+            {
+              "id": null,
+              "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/math.js",
+              "name": "./src/demo5/math.js",
+              "index": 1,
+              "index2": 0,
+              "size": 95,
+              "cacheable": true,
+              "built": true,
+              "optional": false,
+              "prefetched": false,
+              "chunks": [],
+              "issuer": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+              "issuerId": null,
+              "issuerName": "./src/demo5/index.js",
+              "issuerPath": [
+                {
+                  "id": null,
+                  "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+                  "name": "./src/demo5/index.js",
+                  "profile": {
+                    "factory": 54,
+                    "building": 40
+                  }
+                }
+              ],
+              "profile": {
+                "factory": 2,
+                "building": 57
+              },
+              "failed": false,
+              "errors": 0,
+              "warnings": 0,
+              "assets": [],
+              "reasons": [
+                {
+                  "moduleId": null,
+                  "moduleIdentifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+                  "module": "./src/demo5/index.js",
+                  "moduleName": "./src/demo5/index.js",
+                  "type": "harmony side effect evaluation",
+                  "userRequest": "./math.js",
+                  "loc": "3:0-41"
+                },
+                {
+                  "moduleId": null,
+                  "moduleIdentifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+                  "module": "./src/demo5/index.js",
+                  "moduleName": "./src/demo5/index.js",
+                  "type": "harmony import specifier",
+                  "userRequest": "./math.js",
+                  "loc": "8:31-35"
+                },
+                {
+                  "moduleId": null,
+                  "moduleIdentifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+                  "module": "./src/demo5/index.js",
+                  "moduleName": "./src/demo5/index.js",
+                  "type": "harmony import specifier",
+                  "userRequest": "./math.js",
+                  "loc": "9:31-37"
+                }
+              ],
+              "usedExports": [
+                "cube",
+                "square"
+              ],
+              "providedExports": [
+                "square",
+                "cube"
+              ],
+              "optimizationBailout": [],
+              "depth": 1,
+              "source": "export function square(x) {\n  return x * x;\n}\n\nexport function cube(x) {\n  return x * x * x;\n}\n"
+            }
+          ],
+          "filteredModules": 0
+        }
+      ],
+      "filteredModules": 0,
+      "origins": [
+        {
+          "module": "",
+          "moduleIdentifier": "",
+          "moduleName": "",
+          "loc": "app",
+          "request": "./src/demo5/index.js",
+          "reasons": []
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": 0,
+      "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js 6f175002944cc437c142c0b9e8b01f9f",
+      "name": "./src/demo5/index.js + 1 modules",
+      "index": 0,
+      "index2": 1,
+      "size": 518,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        0
+      ],
+      "issuer": null,
+      "issuerId": null,
+      "issuerName": null,
+      "issuerPath": null,
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": null,
+          "moduleIdentifier": null,
+          "module": null,
+          "moduleName": null,
+          "type": "single entry",
+          "userRequest": "./src/demo5/index.js",
+          "loc": "app"
+        }
+      ],
+      "usedExports": true,
+      "providedExports": [],
+      "optimizationBailout": [],
+      "depth": 0,
+      "modules": [
+        {
+          "id": null,
+          "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+          "name": "./src/demo5/index.js",
+          "index": 0,
+          "index2": 1,
+          "size": 423,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [],
+          "issuer": null,
+          "issuerId": null,
+          "issuerName": null,
+          "issuerPath": null,
+          "profile": {
+            "factory": 54,
+            "building": 40
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": null,
+              "module": null,
+              "moduleName": null,
+              "type": "single entry",
+              "userRequest": "./src/demo5/index.js",
+              "loc": "app"
+            }
+          ],
+          "usedExports": true,
+          "providedExports": [],
+          "optimizationBailout": [
+            "ModuleConcatenation bailout: Module is an entry point"
+          ],
+          "depth": 0,
+          "source": "// import _ from 'lodash';\n// import printMe from './print.js';\nimport { cube, square } from './math.js';\n  function component() {\n    var element = document.createElement('div');\n    element.innerHTML = [\n      'Hello webpack!',\n      '5 cubed is equal to ' + cube(5),\n      '5 square is qqual to' + square(5)\n    ].join('\\n\\n');\n    console.log(11111111)\n    return element;\n  }\n\n  document.body.appendChild(component());"
+        },
+        {
+          "id": null,
+          "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/math.js",
+          "name": "./src/demo5/math.js",
+          "index": 1,
+          "index2": 0,
+          "size": 95,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [],
+          "issuer": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+          "issuerId": null,
+          "issuerName": "./src/demo5/index.js",
+          "issuerPath": [
+            {
+              "id": null,
+              "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+              "name": "./src/demo5/index.js",
+              "profile": {
+                "factory": 54,
+                "building": 40
+              }
+            }
+          ],
+          "profile": {
+            "factory": 2,
+            "building": 57
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+              "module": "./src/demo5/index.js",
+              "moduleName": "./src/demo5/index.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./math.js",
+              "loc": "3:0-41"
+            },
+            {
+              "moduleId": null,
+              "moduleIdentifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+              "module": "./src/demo5/index.js",
+              "moduleName": "./src/demo5/index.js",
+              "type": "harmony import specifier",
+              "userRequest": "./math.js",
+              "loc": "8:31-35"
+            },
+            {
+              "moduleId": null,
+              "moduleIdentifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/src/demo5/index.js",
+              "module": "./src/demo5/index.js",
+              "moduleName": "./src/demo5/index.js",
+              "type": "harmony import specifier",
+              "userRequest": "./math.js",
+              "loc": "9:31-37"
+            }
+          ],
+          "usedExports": [
+            "cube",
+            "square"
+          ],
+          "providedExports": [
+            "square",
+            "cube"
+          ],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "export function square(x) {\n  return x * x;\n}\n\nexport function cube(x) {\n  return x * x * x;\n}\n"
+        }
+      ],
+      "filteredModules": 0
+    }
+  ],
+  "filteredModules": 0,
+  "logging": {
+    "webpack.buildChunkGraph.visitModules": {
+      "entries": [],
+      "filteredEntries": 2,
+      "debug": false
+    }
+  },
+  "children": [
+    {
+      "errors": [],
+      "warnings": [],
+      "publicPath": "",
+      "outputPath": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/dist",
+      "assetsByChunkName": {
+        "HtmlWebpackPlugin_0": "__child-HtmlWebpackPlugin_0"
+      },
+      "assets": [
+        {
+          "name": "__child-HtmlWebpackPlugin_0",
+          "size": 4146,
+          "chunks": [
+            0
+          ],
+          "chunkNames": [
+            "HtmlWebpackPlugin_0"
+          ],
+          "info": {},
+          "emitted": false
+        }
+      ],
+      "filteredAssets": 0,
+      "entrypoints": {
+        "HtmlWebpackPlugin_0": {
+          "chunks": [
+            0
+          ],
+          "assets": [
+            "__child-HtmlWebpackPlugin_0"
+          ],
+          "children": {},
+          "childAssets": {}
+        }
+      },
+      "namedChunkGroups": {
+        "HtmlWebpackPlugin_0": {
+          "chunks": [
+            0
+          ],
+          "assets": [
+            "__child-HtmlWebpackPlugin_0"
+          ],
+          "children": {},
+          "childAssets": {}
+        }
+      },
+      "chunks": [
+        {
+          "id": 0,
+          "rendered": true,
+          "initial": true,
+          "entry": true,
+          "size": 469,
+          "names": [
+            "HtmlWebpackPlugin_0"
+          ],
+          "files": [
+            "__child-HtmlWebpackPlugin_0"
+          ],
+          "hash": "5c7503dcf12b71803819",
+          "siblings": [],
+          "parents": [],
+          "children": [],
+          "childrenByOrder": {},
+          "modules": [
+            {
+              "id": 0,
+              "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/lib/loader.js!/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/default_index.ejs",
+              "name": "./node_modules/html-webpack-plugin/lib/loader.js!./node_modules/html-webpack-plugin/default_index.ejs",
+              "index": 0,
+              "index2": 0,
+              "size": 469,
+              "cacheable": true,
+              "built": true,
+              "optional": false,
+              "prefetched": false,
+              "chunks": [
+                0
+              ],
+              "issuer": null,
+              "issuerId": null,
+              "issuerName": null,
+              "issuerPath": null,
+              "profile": {
+                "factory": 46,
+                "building": 56
+              },
+              "failed": false,
+              "errors": 0,
+              "warnings": 0,
+              "assets": [],
+              "reasons": [
+                {
+                  "moduleId": null,
+                  "moduleIdentifier": null,
+                  "module": null,
+                  "moduleName": null,
+                  "type": "single entry",
+                  "userRequest": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/lib/loader.js!/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/default_index.ejs",
+                  "loc": "HtmlWebpackPlugin_0"
+                }
+              ],
+              "usedExports": true,
+              "providedExports": null,
+              "optimizationBailout": [
+                "ModuleConcatenation bailout: Module is not an ECMAScript module"
+              ],
+              "depth": 0,
+              "source": "var _ = __non_webpack_require__(\"/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/lodash/lodash.js\");module.exports = function (templateParams) { with(templateParams) {return (function(data) {\nvar __t, __p = '';\n__p += '<!DOCTYPE html>\\n<html>\\n  <head>\\n    <meta charset=\"utf-8\">\\n    <title>' +\n((__t = ( htmlWebpackPlugin.options.title )) == null ? '' : __t) +\n'</title>\\n  </head>\\n  <body>\\n  </body>\\n</html>';\nreturn __p\n})();}}"
+            }
+          ],
+          "filteredModules": 0,
+          "origins": [
+            {
+              "module": "",
+              "moduleIdentifier": "",
+              "moduleName": "",
+              "loc": "HtmlWebpackPlugin_0",
+              "request": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/lib/loader.js!/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/default_index.ejs",
+              "reasons": []
+            }
+          ]
+        }
+      ],
+      "modules": [
+        {
+          "id": 0,
+          "identifier": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/lib/loader.js!/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/default_index.ejs",
+          "name": "./node_modules/html-webpack-plugin/lib/loader.js!./node_modules/html-webpack-plugin/default_index.ejs",
+          "index": 0,
+          "index2": 0,
+          "size": 469,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            0
+          ],
+          "issuer": null,
+          "issuerId": null,
+          "issuerName": null,
+          "issuerPath": null,
+          "profile": {
+            "factory": 46,
+            "building": 56
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": null,
+              "module": null,
+              "moduleName": null,
+              "type": "single entry",
+              "userRequest": "/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/lib/loader.js!/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/html-webpack-plugin/default_index.ejs",
+              "loc": "HtmlWebpackPlugin_0"
+            }
+          ],
+          "usedExports": true,
+          "providedExports": null,
+          "optimizationBailout": [
+            "ModuleConcatenation bailout: Module is not an ECMAScript module"
+          ],
+          "depth": 0,
+          "source": "var _ = __non_webpack_require__(\"/Volumes/1t/self/blog/vuepressBlog/docs/front-base/code/webpack-demo/node_modules/lodash/lodash.js\");module.exports = function (templateParams) { with(templateParams) {return (function(data) {\nvar __t, __p = '';\n__p += '<!DOCTYPE html>\\n<html>\\n  <head>\\n    <meta charset=\"utf-8\">\\n    <title>' +\n((__t = ( htmlWebpackPlugin.options.title )) == null ? '' : __t) +\n'</title>\\n  </head>\\n  <body>\\n  </body>\\n</html>';\nreturn __p\n})();}}"
+        }
+      ],
+      "filteredModules": 0,
+      "logging": {
+        "webpack.buildChunkGraph.visitModules": {
+          "entries": [],
+          "filteredEntries": 2,
+          "debug": false
+        }
+      },
+      "children": [],
+      "name": "HtmlWebpackCompiler"
+    }
+  ]
+}

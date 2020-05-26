@@ -545,6 +545,80 @@ module.exports = {
 ```
 会生成一个name为vendors的包
 
+#### 模块标识符
+官网说修改了文件,除了runtime.js其他的文件名都不会变
+::: tip
+但是我没有遇到
+:::
+为了让其他文件名也修改可用
+``` js
+module.exports = {
+  optimization: {
+    moduleIds: 'hashed'
+  }
+}
+```
+
+### 懒加载
+利用一些代码书写的方式将模块拆分出来，完成某些操作后引用这些代码块
+其实就是动态导入
+``` js
+button.onclick = e => import(/* webpackChunkName: "print" */ './print').then(module => {
+  var print = module.default;
+  print();
+});
+```
+::: tip
+动态导入的不是 node_module 目录下的
+:::
+
+#### 很多库都有自己的懒加载方式
+[vue](https://alexjoverm.github.io/2017/07/16/Lazy-load-in-Vue-using-Webpack-s-code-splitting/)
+[react](https://reacttraining.com/react-router/web/guides/code-splitting)
+[angular-js](https://medium.com/@var_bin/angularjs-webpack-lazyload-bb7977f390dd)
+
+Vue
+3种方式懒加载
+1. 组件,也被称为异步组件
+2. Router,路由
+3. Vuex module
+##### 全局路由懒加载
+``` js
+Vue.component("AsyncCmp", () => import("./AsyncCmp"));
+```
+
+##### 局部路由懒加载
+``` js
+new Vue({
+  // ...
+  components: {
+    AsyncCmp: () => import("./AsyncCmp")
+  }
+});
+```
+如果引入的组件不是 defalut 的
+``` js
+components: {
+  UiAlert: () => import('keen-ui').then(({ UiAlert }) => UiAlert)
+}
+```
+
+##### 路由懒加载
+``` js
+const Login = () => import("./login");
+new VueRouter({
+  routes: [{ path: "/login", component: Login }]
+});
+```
+
+##### vuex module 懒加载
+``` js
+const store = new Vuex.Store()
+// Assume there is a "login" module we wanna load
+import('./store/login').then(loginModule => {
+  store.registerModule('login', loginModule)
+})
+```
 
 
 
