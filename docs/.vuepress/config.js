@@ -56,7 +56,8 @@ function getFrontBaseSidebar (groupA, introductionA) {
       children: [
         ['', introductionA],
         ['source-code', '源码实现'],
-        ['webpack-demo', 'webpack实践']
+        ['webpack-demo', 'webpack实践'],
+        ['leet-code', '每日力扣']
       ]
     }
   ]
