@@ -16,20 +16,12 @@ module.exports = {
     nav:[ // 导航栏配置
       {text: '前端基础', link: '/front-base/' },
       {text: '算法题库', link: '/algorithm/'},
-      {text: '微博', link: 'https://baidu.com'},
-      { text: 'test', items: [
-          {
-            text: '1', link: '/blog/',
-          },
-          {
-            text: '2', link: '/blog/second-blog.md',
-          }
-        ]
-      }      
+      {text: '每日积累', link: '/daily/' }
     ],
     sidebar: {
       '/blog/': getThemeSidebar('测试', '介绍'),
-      '/front-base/': getFrontBaseSidebar('前端基础', '介绍')
+      '/front-base/': getFrontBaseSidebar('前端基础', '介绍'),
+      '/daily': getDailySidebar('每日积累')
     }
   }
 };
@@ -58,6 +50,20 @@ function getFrontBaseSidebar (groupA, introductionA) {
         ['source-code', '源码实现'],
         ['webpack-demo', 'webpack实践'],
         ['leet-code', '每日力扣']
+      ]
+    }
+  ]
+}
+
+function getDailySidebar (groupA) {
+  return [
+    {
+      title: groupA,
+      collapsable: false,
+      sidebarDepth: 2,
+      children: [
+        ['', '介绍'],
+        ['html', 'HTML'],
       ]
     }
   ]
