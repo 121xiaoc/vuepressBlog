@@ -64,6 +64,7 @@ function getDailySidebar (groupA) {
       children: [
         ['', '介绍'],
         ['html', 'HTML'],
+        ['css', 'CSS'],
       ]
     }
   ]
