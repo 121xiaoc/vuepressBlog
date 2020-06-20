@@ -21,7 +21,7 @@ module.exports = {
     sidebar: {
       '/blog/': getThemeSidebar('测试', '介绍'),
       '/front-base/': getFrontBaseSidebar('前端基础', '介绍'),
-      '/daily': getDailySidebar('每日积累')
+      '/daily/': getDailySidebar('每日积累')
     }
   }
 };
@@ -63,8 +63,10 @@ function getDailySidebar (groupA) {
       sidebarDepth: 2,
       children: [
         ['', '介绍'],
-        ['html', 'HTML'],
-        ['css', 'CSS'],
+        ['html', '我的HTML'],
+        ['css', '我的CSS'],
+        ['js', '我的JS'],
+        ['project', '我的项目'],
       ]
     }
   ]
