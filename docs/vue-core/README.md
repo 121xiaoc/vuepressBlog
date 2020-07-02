@@ -676,8 +676,492 @@ mergeOptions(parent,child,vm) {
 }
 ```
 
-extend 和 mixins 可以被合并 options
+extend 和 mixins 可以被合并 options 里
 
+2. 组件场景
+
+组件的构造函数是通过 Vue.extend 它定义在src/core/global-api/extend.js
+
+``` js
+Vue.extend = function (extendOptions) {
+  // ...
+  Sub.options = mergeOptions(
+    Super.options,
+    extendOptions
+  )
+  // ...
+  return Sub
+}
+```
+
+这里的 extendOptions 对应的就是前面定义的组件对象，它会和 Vue.options 合并到 Sub.opitons 中
+
+组件的初始化过程，代码定义在 src/core/vdom/create-component.js
+
+``` js
+function createComponentInstanceForVnode() {
+  const options: InternalComponentOptions = {
+    _isComponent: true,
+    _parentVnode: vnode,
+    parent
+  }
+  // ... 
+  return new vnode.componentOptions.Ctor(options)
+}
+```
+这个 new vnode.componentOptions.Ctor(options) 之后就会走的 Vue.prototype._init() 里
+之后会调用 init 里的 initInternalComponent 方法
+
+``` js
+export function initInternalComponent () {
+  const opts = vm.$options = Object.create(vm.constructor.options)
+  // ...
+}
+```
+
+纵观一些库、框架的设计几乎都是类似的，自身定义了一些默认配置，同时又可以在初始化阶段传入一些定义配置，然后去 merge 默认配置
+
+vm.$options 差不多是这样
+``` js
+vm.$options = {
+  parent: Vue /*父Vue实例*/,
+  propsData: undefined,
+  _componentTag: undefined,
+  _parentVnode: VNode /*父VNode实例*/,
+  _renderChildren:undefined,
+  __proto__: {
+    components: { },
+    directives: { },
+    filters: { },
+    _base: function Vue(options) {
+        //...
+    },
+    _Ctor: {},
+    created: [
+      function created() {
+        console.log('parent created')
+      }, function created() {
+        console.log('child created')
+      }
+    ],
+    mounted: [
+      function mounted() {
+        console.log('child mounted')
+      }
+    ],
+    data() {
+       return {
+         msg: 'Hello Vue'
+       }
+    },
+    template: '<div>{{msg}}</div>'
+  }
+}
+```
+
+### 生命周期
+最终执行生命周期的函数都是调用 callHook 方法。它的定义在 src/core/instance/lifecycle
+
+``` js
+function callHook(vm, hook) {
+  const handlers = vm.$options[hook]
+  for (let i = 0, j = handlers.length; i < j; i++) {
+    handlers[i].call(vm)
+  }
+}
+```
+根据传入的字符串 hook，去拿到 vm.$options[hook] 对应的回调函数数组，然后遍历执行，执行的时候把 vm 作为函数执行的上下文
+
+### 组件注册
+全局注册
+例如
+``` js
+Vue.component('my-component', { })
+```
+
+那么，Vue.component 函数是在什么时候定义的呢，它的定义过程发生在最开始初始化 Vue 的全局函数的时候，代码在 src/core/global-api/assets.js 中
+``` js
+import { ASSET_TYPES } from 'shared/constants'
+function initAssetRegisters(Vue) {
+  ASSET_TYPES.forEach(type => {
+    Vue[type] = function(id, definition) {
+      //...
+      if (type === 'component' && isPlainObject(definition)) {
+        definition.name = definition.name || id
+        definition = this.options._base.extend(definition)
+      }
+      // ...
+      this.options[type + 's'][id] = definition
+      return definition
+    } 
+  })
+}
+```
+通过 this.opitons._base.extend， 相当于 Vue.extend 把这个对象转换成一个继承于 Vue 的构造函数，最后通过 this.options[type + 's'][id] = definition 把它挂载到 Vue.options.components 上
+
+然后在创建 vnode 的过程中，会执行 _createElement 方法，它定义在 src/core/vdom/create-element.js
+``` js
+function _createElement(context, tag, data, children) {
+  // ...
+  if (isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
+    vnode = createComponent(Ctor, data, context, children, tag)
+  }
+  // ...
+  return vnode
+}
+```
+通过 resolveAsset 判断tag是否是一个组件，定义在 src/core/utils/options.js
+
+``` js
+function resolveAsset(
+  options,
+  type,
+  id) {
+  // options.components
+  const assets = options[type]
+  if (hasOwn(assets, id)) return assets[id]
+  // 转化成驼峰
+  const camelizedId = camelize(id)
+  if (hasOwn(assets, camelizedId)) return assets[camelizedId]
+  // 转化成首字符大写
+  const PascalCaseId = capitalize(camelizedId)
+  if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
+  const res = assets[id] || assets[camelizedId] || assets[PascalCaseId]
+  return res
+}
+```
+vm.$options.components[tag]，这样我们就可以在 resolveAsset 的时候拿到这个组件的构造函数，并作为 createComponent 的钩子的参数。
+
+
+局部注册
+在组件的 Vue 的实例化阶段有一个合并 option 的逻辑，之前我们也分析过，所以就把 components 合并到 vm.$options.components 上，这样我们就可以在 resolveAsset 的时候拿到这个组件的构造函数，并作为 createComponent 的钩子的参数
+
+
+## 深入响应式原理
+
+在 Vue 的初始化阶段，_init 方法执行的时候，会执行 initState(vm) 它的定义在 src/core/instance/state.js
+
+``` js
+function initState(vm) {
+  opts = vm.$options
+  initProps(vm, opts.props)
+  initMethods(vm, opts.methods)
+  initData(vm)
+  initComputed(vm, opts.computed)
+  initWatch(vm, opts.watch)
+}
+```
+initState 方法主要是对 props、methods、data、computed 和 wathcer 等属性做了初始化
+
+这里我们重点分析 props 和 data
+
+``` js
+function initProps (vm, propsOptions) {
+  for (const key in propsOptions) {
+    defineReactive(props, key, value)
+  }
+  if (!(key in vm)) {
+    proxy(vm, `_props`, key)
+  }
+} 
+```
+
+一是调用 defineReactive 方法把每个 prop 对应的值变成响应式 另一个是通过 proxy 把 vm._props.xxx 的访问代理到 vm.xxx 上
+
+``` js
+function initData (vm, data) {
+  const keys = Object.keys(data)
+  let i = keys.length
+  while (i--) {
+    const key = keys[i]
+    proxy(vm, `_data`, key)
+  }
+  observe(data, true /* asRootData */)
+}
+```
+一个是对定义 data 函数返回对象的遍历，通过 proxy 把每一个值 vm._data.xxx 都代理到 vm.xxx 上.另一个是调用 observe 方法观测整个 data 的变化，把 data 也变成响应式
+
+proxy 代理
+
+``` js
+const sharedPropertyDefinition = {
+  enumerable: true,
+  configurable: true,
+  get: noop,
+  set: noop
+}
+function proxy (target, sourceKey, key) {
+  sharedPropertyDefinition.get = function proxyGetter () {
+    return this[sourceKey][key]
+  }
+  sharedPropertyDefinition.set = function proxySetter (val) {
+    this[sourceKey][key] = val
+  }
+  Object.defineProperty(target, key, sharedPropertyDefinition)
+}
+```
+通过 Object.defineProperty 把 target[sourceKey][key] 的读写变成了对 target[key] 的读写
+
+observe
+observe 的功能就是用来监测数据的变化，它的定义在 src/core/observer/index.js 中：
+``` js
+function observe (value) {
+  let ob = new Observer(value)
+  return ob
+}
+```
+observe 方法的作用就是给添加一个 Observer
+``` js
+class Observer {
+  value: any;
+  dep: Dep;
+  vmCount: number
+  constructor (value: any) {
+    this.dep = new Dep()
+    def(value, '__ob__', this)
+    if (Array.isArray(value)) {
+      this.observeArray(value)
+    } else {
+      this.walk(value)
+    }
+  }
+
+  walk (obj) {
+    const keys = Object.keys(obj)
+    for (let i = 0; i < keys.length; i++) {
+      defineReactive(obj, keys[i])
+    }
+  }
+
+  observeArray (items: Array<any>) {
+    for (let i = 0, l = items.length; i < l; i++) {
+      observe(items[i])
+    }
+  }
+}
+```
+
+Observer 的构造函数逻辑很简单，首先实例化 Dep 对象，这块稍后会介绍，接着通过执行 def 函数把自身实例添加到数据对象 value 的 __ob__ 属性上
+
+walk 方法是遍历对象的 key 调用 defineReactive
+
+defineReactive 的功能就是定义一个响应式对象，给对象动态添加 getter 和 setter，它的定义在 src/core/observer/index.js
+
+```js
+function defineReactive (
+  obj: Object,
+  key: string,
+  val: any,
+  customSetter?: ?Function,
+  shallow?: boolean
+) {
+  const dep = new Dep()
+  const property = Object.getOwnPropertyDescriptor(obj, key)
+  const getter = property && property.get
+  const setter = property && property.set
+  let childOb = observe(val)
+  Object.defineProperty(obj, key, {
+    enumerable: true,
+    configurable: true,
+    get: function reactiveGetter () {
+      const value = getter ? getter.call(obj) : val
+      if (Dep.target) {
+        dep.depend()
+      }
+      return value
+    },
+    set: function reactiveSetter (newVal) {
+      const value = getter ? getter.call(obj) : val
+      if (setter) {
+        val = setter.call(obj, newVal)
+      } else {
+        val = newVal
+      }
+      dep.notify()
+    }
+  })
+}
+```
+
+defineReactive 函数最开始初始化 Dep 对象的实例，接着拿到 obj 的属性描述符，然后对子对象递归调用 observe 方法，这样就保证了无论 obj 的结构多复杂，它的所有子属性也能变成响应式的对象
+
+Object.defineProperty 去给 obj 的属性 key 添加 getter 和 setter
+
+### 依赖收集
+Dep 是整个 getter 依赖收集的核心 它的定义在 src/core/observer/dep.js 中
+``` js
+import type Watcher from './watcher'
+let uid = 0
+class Dep {
+  static target: ?Watcher;
+  id: number;
+  subs: Array<Watcher>;
+  constructor () {
+    this.id = uid++
+    this.subs = []
+  }
+  // 向 Dep 里添加 Watch
+  addSub (sub) {
+    this.subs.push(sub)
+  }
+  // 向 Watch 里添加 Dep
+  depend () {
+    if (Dep.target) {
+      Dep.target.addDep(this)
+    }
+  }
+  // 通知Watch 执行 update
+  notify () {
+    // stabilize the subscriber list first
+    const subs = this.subs.slice()
+    for (let i = 0, l = subs.length; i < l; i++) {
+      subs[i].update()
+    }
+  }
+}
+Dep.target = null
+const targetStack = []
+
+// 将 如果 Dep.target 存在就记录到栈里
+function pushTarget (_target: ?Watcher) {
+  if (Dep.target) targetStack.push(Dep.target)
+  Dep.target = _target
+}
+
+function popTarget () {
+  Dep.target = targetStack.pop()
+}
+```
+需要特别注意的是它有一个静态属性 target 这是一个全局唯一 Watcher，这是一个非常巧妙的设计，因为在同一时间只能有一个全局的 Watcher 被计算
+
+Watcher
+
+``` js
+let uid = 0
+class Watcher {
+  // 放deps
+  deps: []
+  depIds: new Set()
+  newDeps: [],
+  newDepIds: new Set()
+  constructor(vm, expOrFn) {
+    this.vm = vm
+    this.getter = expOrFn
+    this.value = this.get()
+  }
+  get () {
+    pushTarget(this)
+    const vm = this.vm
+    // 这里去执行了 render 和 update 方法
+    let value = this.getter.call(vm, vm)
+    popTarget()
+    this.cleanupDeps()
+    return value
+  }
+  addDep (dep: Dep) {
+    const id = dep.id
+    if (!this.newDepIds.has(id)) {
+      this.newDepIds.add(id)
+      this.newDeps.push(dep)
+      if (!this.depIds.has(id)) {
+        dep.addSub(this)
+      }
+    }
+  }
+}
+```
+this.deps 和 this.newDeps 表示 Watcher 实例持有的 Dep 实例的数组；而 this.depIds 和 this.newDepIds 分别代表 this.deps 和 this.newDeps 的 id Set
+
+分析过程
+
+之前我们介绍当对数据对象的访问会触发他们的 getter 方法, 那么这些对象什么时候被访问呢？还记得之前我们介绍过 Vue 的 mount 过程是通过 mountComponent 函数
+``` js
+updateComponent = () => {
+  vm._update(vm._render(), hydrating)
+}
+new Watcher(vm, updateComponent, noop, {
+  before () {
+    if (vm._isMounted) {
+      callHook(vm, 'beforeUpdate')
+    }
+  }
+}, true /* isRenderWatcher */)
+```
+new Watcher 触发 Watch 中的构造函数 然后执行它的this.get 方法，执行
+``` js
+pushTarget(this)
+``` 
+``` js
+function pushTarget (_target) {
+  if (Dep.target) targetStack.push(Dep.target)
+  Dep.target = _target
+}
+```
+实际上就是把 Dep.target 赋值为当前的 Watcher 并压栈 接着又执行了 
+``` js
+value = this.getter.call(vm, vm)
+```
+实际上就是在执行
+``` js
+vm._update(vm._render(), hydrating)
+```
+render 方法会生成渲染 VNode 并且在这个过程中会对 vm 上的数据的访问 触发数据对象的 getter
+
+那么每个对象值的 getter 都持有一个 dep，在触发 getter 的时候会调用 dep.depend() 方法，也就会执行 Dep.target.addDep(this)
+
+Dep.target 已经被赋值为渲染 watcher，那么就执行到 addDep 方法
+
+``` js
+addDep (dep) {
+  const id = dep.id
+  if (!this.newDepIds.has(id)) {
+    this.newDepIds.add(id)
+    this.newDeps.push(dep)
+    if(!this.depIds.has(id)) {
+      dep.addSub(this)
+    }
+  }
+}
+```
+这时候会做一些逻辑判断（保证同一数据不会被添加多次）后执行 dep.addSub(this)，那么就会执行 this.subs.push(sub)，也就是说把当前的 watcher 订阅到这个数据持有的 dep 的 subs 中，这个目的是为后续数据变化时候能通知到哪些 subs 做准备。
+
+接下来执行
+``` js
+popTarget()
+```
+``` js
+Dep.target = targetStack.pop()
+```
+实际上就是把 Dep.target 恢复成上一个状态，因为当前 vm 的数据依赖收集已经完成，那么对应的渲染Dep.target 也需要改变
+
+最后执行依赖清空
+``` js
+this.cleanupDeps()
+```
+``` js
+cleanupDeps () {
+  // 获取 上一次 Watcher 收集到的Dep的长度 
+  let i = this.deps.length
+  while(i--) { // 到 0 退出
+    const dep = this.deps[i]
+    if (!this.newDepIds.has(dep.id)) {
+      // 将旧的 Dep 删除 Watcher
+      dep.removeSub(this)
+    }
+  }
+  // 将 depIds 和 newDepIds 交换并清空 newDepIds
+  let tmp = this.depIds
+  this.depIds = this.newDepIds
+  this.newDepIds = tmp
+  this.newDepIds.clear()
+
+   tmp = this.deps
+  this.deps = this.newDeps
+  this.newDeps = tmp
+  this.newDeps.length = 0
+}
+```
+总结 其实 Watcher 和 Dep 就是一个非常经典的观察者设计模式的实现
 
 
 
