@@ -1601,7 +1601,7 @@ function install (Vue) {
       i(vm, callVal)
     }
   }
-  // 混合
+  // 混合 这是最重要的办法
   Vue.mixin({
     beforeCreate () {
       if (isDef(this.$options.router)) {
@@ -1631,7 +1631,18 @@ function install (Vue) {
   Vue.component('RouterLink', Link)
 }
 ```
+Vue-Router 安装最重要的一步就是利用 Vue.mixin 去把 beforeCreate 和 destroyed 钩子函数注入到每一个组件
 
+Vue.mixin
+``` js
+function initMixin (Vue: GlobalAPI) {
+  Vue.mixin = function (mixin: Object) {
+    this.options = mergeOptions(this.options, mixin)
+    return this
+  }
+}
+```
+它的实现实际上非常简单，就是把要混入的对象通过 mergeOptions 合并到 Vue 的 options 中
 
 
 
