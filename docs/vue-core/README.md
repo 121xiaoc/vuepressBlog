@@ -1163,6 +1163,476 @@ cleanupDeps () {
 ```
 总结 其实 Watcher 和 Dep 就是一个非常经典的观察者设计模式的实现
 
+### 派发更新
+defineReactive 的 setter 部分
+``` js
+function defineReactive () {
+  Object.defineProperty(obj, key, {
+    set: function reactiveSetter(newValue) {
+      dep.notify()
+    }
+  })
+}
+```
+dep.notify() 通知所有的订阅者
+``` js
+class Dep {
+  notify () {
+    for (let i = 0, l = subs.length; i < l; i++) {
+      subs[i].update()
+    }
+  }
+}
+```
+遍历 subs 调用每一个 watcher 的 update 方法
+``` js
+class Watcher {
+  update () {
+    queueWatcher(this)
+  }
+}
+```
+会走到一个 queueWatcher(this) 的逻辑
+
+``` js
+const queue = []
+let has = {}
+let waiting = false
+let flushing = false
+function queueWatcher(watcher) {
+  const id = watcher.id
+  if (has[id] == null) {
+    has[id] = true
+    queue.push(watcher)
+    if (!waiting) {
+      waiting = true
+      nextTick(flushSchedulerQueue)
+    }
+  }
+}
+```
+首先用 has 对象保证同一个 Watcher 只添加一次
+
+接下来我们来看 flushSchedulerQueue 的实现
+``` js
+function flushSchedulerQueue() {
+  for (index = 0; index < queue.length; index++) {
+    watcher = queue[index]
+    if (watcher.before) {
+      watcher.before()
+    }
+    id = watcher.id
+    has[id] = null
+    watcher.run()
+  }
+  resetSchedulerState()
+}
+```
+其中 resetSchedulerState 函数
+``` js
+function resetSchedulerState () {
+  index = queue.length = activatedChildren.length = 0
+  has = {}
+  waiting = flushing = false
+}
+```
+恢复状态
+``` js
+class Watcher {
+  run () {
+    const value = this.get()
+  }
+}
+```
+
+### 计算属性
+在 initStats 有一个 initComputed
+``` js
+function initComputed(vm, computed)
+  const watchers = Object.create(null)
+  for (const key in computed) {
+    watchers[key] = new Watcher(vm)
+  }
+  defineComputed(vm, key, userDef)
+```
+
+computer 的 Watcher 构造函数和渲染 Watcher 不同
+``` js
+constructor() {
+  if (this.computed) {
+    this.value = undefined
+    this.dep = new Dep()
+  } else {
+    // 这是渲染Watcher的逻辑
+    this.get()
+  }
+}
+``` 
+computer 的 watcher 本身持有了一个 Dep
+
+defineComputed 函数里有劫持 computer 的逻辑
+``` js
+function defineComputed (target, key, userDef) {
+  sharedPropertyDefinition.get = createComputedGetter(key)
+  Object.defineProperty(target, key, sharedPropertyDefinition)
+}
+```
+sharedPropertyDefinition.get 是 通过 createComputedGetter 返回的
+``` js
+function createComputedGetter(key) {
+  return function computedGetter () {
+    const watcher = this._computedWatchers && this._computedWatchers[key]
+    watcher.depend()
+    return watcher.evaluate()
+  }
+}
+```
+也就是说当 computer 被访问的时候就会执行 sharedPropertyDefinition.get 去运行 watcher 的depend() 和 watcher的evaluate()
+
+``` js
+class Watcher {
+  depend () {
+    if (this.dep && Dep.target) {
+      this.dep.depend()
+    }
+  }
+  evaluate () {
+    if (this.dirty) {
+      this.value = this.get()
+      this.dirty = false
+    }
+    return this.value
+  }
+}
+```
+this.get() 就会去执行 value = this.getter.call(vm, vm) 实际上就是去执行了 computer 的函数
+
+其中 computer 函数中会有一些响应的值，那么会触发它们的 get , 因为运行了 Watcher 的 get 此时这些响应的值的 Dep.target 就是 computer 的 Watcher
+
+一旦计算属性的所依赖的值发生变化就是触发它 setter ，通知所有订阅它变化的 watcher 更新，执行 watcher.update() 方法
+watcher 的 update 方法
+``` js
+function update() {
+  if (this.computed) {
+    this.getAndInvoke(() => {
+      this.dep.notify()
+    })
+  } else {
+    queueWatcher(this)
+  }
+}
+```
+getAndInvoke
+``` js
+getAndInvoke (cb: Function) {
+  const value = this.get()
+  if (value !== this.value) {
+    cb.call(this.vm, value, oldValue)
+  }
+}
+```
+cb: this.vm.dep.notify() 通知渲染 Watcher 去渲染
+
+### 监听属性
+vm 初始时会运行 initWatch
+``` js
+function initWatch (vm, watch) {
+  for (var key in watch) {
+    var handler = watch[key]
+    createWatcher(vm, key, handler);
+  }
+}
+```
+会运行 createWatcher
+``` js
+function createWatcher(
+  vm,
+  expOrFn: String, // watch 名
+  handler
+) {
+  return vm.$watch(expOrFn, handler, options)
+}
+```
+会运行 Vue.portotype.$watch
+``` js
+Vue.prototype.$watch = function(
+  expOrFn,
+  cb,
+  options
+) {
+  var vm = this;
+  var watcher = new Watcher(vm, expOrFn, cb, options);
+}
+```
+watch 在 Watch 构造函数分析
+```js
+constructor() {
+  if (typeof expOrFn === 'function') {
+    this.getter = expOrFn
+  } else {
+    this.getter = parsePath(expOrFn)
+  }
+  this.value = this.get()
+}
+```
+对 expOrFn 的判断很重要
+watch 的 getter 就是从 parsePath 获取的
+``` js
+var bailRE = /[^\w.$]/;
+function parsePath (path) {
+  if (bailRE.test(path)) {
+    return
+  }
+  var segments = path.split('.');
+  return function (obj) {
+    for (var i = 0; i < segments.length; i++) {
+      if (!obj) { return }
+      obj = obj[segments[i]];
+    }
+    return obj
+  }
+}
+```
+可以看出，根据key提取到的这个getter方法，其实是key路径最后的那个属性的值
+
+构造函数最后还是会去执行
+``` js
+Watcher.prototype.get = function() {
+  pushTarget(this);
+  // 这里的get就是
+  value = this.getter.call(vm, vm);
+  popTarget();
+}
+```
+
+### 组件更新
+执行 Vue.prototype._update 
+``` js
+Vue.prototype._update =  function (vnode) {
+  if (!prevVnode) {
+    vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
+  } else {
+     // updates
+    vm.$el = vm.__patch__(prevVnode, vnode)
+  }
+}
+```
+会调用 patch 函数
+``` js
+function patch (oldVnode, vnode) {
+  // 如果新节点为空 就移除旧节点
+  if (isUndef(vnode)) {
+    if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
+    return
+  }
+  // 如果老的节点为空 就直接用新的节点创建 Element
+  if (isUndef(oldVnode)) {
+    // empty mount (likely as component), create new root element
+    isInitialPatch = true
+    createElm(vnode, insertedVnodeQueue)
+  }
+  // 表示老的节点和新的节点都存在 
+  else {
+    // 是相同的节点
+    if (sameVnode(oldVnode, vnode)) {
+      // 进行diff
+      patchVnode(oldVnode, vnode, insertedVnodeQueue, removeOnly)
+    }
+    // 不是相同的节点
+    else {
+      // 用新的节点生成新的node
+      createElm(
+        vnode,
+        insertedVnodeQueue,
+        oldElm._leaveCb ? null : parentElm,
+        nodeOps.nextSibling(oldElm)
+      )
+      if (isDef(vnode.parent)) {
+        // ... 更新父节点占位符
+      }
+      // 移除旧的节点
+      invokeDestroyHook(oldVnode)
+    }
+  }
+}
+```
+判断是否是相同的节点 sameVnode
+``` js
+function sameVnode (a, b) {
+  return (
+    a.key === b.key && // 是否是相同的key
+    a.tag === b.tag && // tag 相同
+    a.isComment === b.isComment && // 是否是组件
+    isDef(a.data) === isDef(b.data) &&
+    sameInputType(a, b)
+  )
+} 
+```
+如果新旧节点相同 就会执行 patchvnode 
+``` js
+function patchVnode (oldVnode, vnode) {
+  // 执行 hook 上的 prepatch 函数
+  if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
+    i(oldVnode, vnode)
+  }
+  // 执行 hook 上的 update 函数
+  if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
+
+  if (isUndef(vnode.text)) {
+    if (isDef(oldCh) && isDef(ch)) {
+      if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
+    } else if (isDef(ch)) {
+      if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
+      addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
+    } else if (isDef(oldCh)) {
+      removeVnodes(elm, oldCh, 0, oldCh.length - 1)
+    } else if (isDef(oldVnode.text)) {
+      nodeOps.setTextContent(elm, '')
+    }
+  } else if (oldVnode.text !== vnode.text) {
+    nodeOps.setTextContent(elm, vnode.text)
+  }
+  if (isDef(i = data.hook) && isDef(i = i.postpatch)) i(oldVnode, vnode)
+}
+```
+主要是 patch 的过程
+1. 判断新的节点下是否text 如果是text 就进行新旧节点text 的判断
+2. 对新旧节点子元素进行新旧节点相同的判断，如果 ch 和 oldCh 同时存在就调用 diff
+3. 旧节点存在 新节点不存在 就移除旧节点
+4. 旧节点不存在 新节点存在 就创建新节点
+
+diff 过程
+``` js
+function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
+  while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+    if (isUndef(oldStartVnode)) {
+      oldStartVnode = oldCh[++oldStartIdx]
+    } else if (isUndef(oldEndVnode)) {
+      oldEndVnode = oldCh[--oldEndIdx]
+    } else if (sameVnode(oldStartVnode, newStartVnode)) {
+      patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue)
+      oldStartVnode = oldCh[++oldStartIdx]
+      newStartVnode = newCh[++newStartIdx]
+    } else if(sameVnode(oldEndVnode, newEndVnode)) {
+      patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue)
+      oldEndVnode = oldCh[--oldEndIdx]
+      newEndVnode = newCh[--newEndIdx]
+    }else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+      patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue)
+      canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
+      oldStartVnode = oldCh[++oldStartIdx]
+      newEndVnode = newCh[--newEndIdx]
+    } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+      patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue)
+      canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
+      oldEndVnode = oldCh[--oldEndIdx]
+      newStartVnode = newCh[++newStartIdx]
+    } else {
+      if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
+      idxInOld = isDef(newStartVnode.key)
+        ? oldKeyToIdx[newStartVnode.key]
+        : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
+      if (isUndef(idxInOld)) { // New element
+        createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
+      } else {
+        vnodeToMove = oldCh[idxInOld]
+        if (sameVnode(vnodeToMove, newStartVnode)) {
+          patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue)
+          oldCh[idxInOld] = undefined
+          canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
+        } else {
+          // same key but different element. treat as new element
+          createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
+        }
+      }
+      newStartVnode = newCh[++newStartIdx]
+    }
+    if (oldStartIdx > oldEndIdx) {
+      refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
+      addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
+    } else if (newStartIdx > newEndIdx) {
+      removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx)
+    }
+  }
+}
+```
+
+## Vue Router 
+
+### Vue.use
+
+#### initUse
+``` js
+function initUse(Vue) {
+  Vue.use = function (plugin) {
+    // 获取 this._installedPlugins 已经存储的插件
+    const installedPlugins = this._installedPlugins : []
+    // 假如插件已经 use 过, 就不能执行下面的逻辑了
+    if (installedPlugins.indexOf(plugin) > -1) {
+      return this
+    }
+    // 移除第一个参数 因为第一个参数是 plugin
+    const args = toArray(arguments, 1)
+    // 接下来要用到 args 的方法第一个参数就需要用的 Vue
+    args.unshift(this)
+    if (typeof plugin.install === 'function') {
+      plugin.install.apply(plugin, args)
+    } else {
+      plugin.install.apply(plugin, args)
+    }
+    installedPlugins.push(plugin)
+    return this
+  }
+}
+```
+可以看到 Vue 提供的插件注册机制很简单，每个插件都需要实现一个静态的 install 方法，当我们执行 Vue.use 注册插件的时候，就会执行这个 install 方法，并且在这个 install 方法的第一个参数我们可以拿到 Vue 对象，这样的好处就是作为插件的编写方不需要再额外去import Vue 了
+
+#### 路由安装
+Vue Router 类也实现了 install 方法
+``` js
+function install (Vue) {
+  if (install.installed && _Vue === Vue) return
+  install.installed = true
+  _Vue = Vue
+  // 注册实例
+  const registerInstance = (vm, callVal) => {
+    let i = vm.$options._parentVnode
+    if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) {
+      i(vm, callVal)
+    }
+  }
+  // 混合
+  Vue.mixin({
+    beforeCreate () {
+      if (isDef(this.$options.router)) {
+        this._routerRoot = this
+        this._router = this.$options.router
+        this._router.init(this)
+        Vue.util.defineReactive(this, '_route', this._router.history.current)
+      } else {
+        this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
+      }
+      registerInstance(this, this)
+    },
+    destroyed () {
+      registerInstance(this)
+    }
+  })
+  // 访问 get 其实是访问 vm._routerRoot._router
+  Object.defineProperty(Vue.prototype, '$router', {
+    get () { return this._routerRoot._router }
+  })
+  // 访问 get 其实是访问 vm._routerRoot._route
+  Object.defineProperty(Vue.prototype, '$route', {
+    get () { return this._routerRoot._route }
+  })
+
+  Vue.component('RouterView', View)
+  Vue.component('RouterLink', Link)
+}
+```
+
+
 
 
 
