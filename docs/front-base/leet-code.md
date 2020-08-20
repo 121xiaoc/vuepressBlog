@@ -107,8 +107,105 @@
 ## 状态转移方程 
 S[i ... j] 代表字符串下标 i 到 j 是回文 那也就意味着 S[i + 1 ... j - 1] 是回文
 ## 临界值
-j - 1 - (i + 1) + 1 > 1 
-j - i > 2
+1. j - 1 - (i + 1) + 1 > 1  -> j - i > 2
+2. i < j
+## 代码思路
+1. 判断特殊情况
+字符串长度为 1 或者为 2和3,因为1必定为回文,2的话只要比较头尾相等也必为回文
+``` js
+if(s.length == 1) {
+  return s
+}
+if(s.length == 2) {
+  s[0] == s[1] ? s : s[0]
+}
+```
+2. 对角线 i == j 所以 s[i][j] == true
+``` js
+for(var i = 0; i < s.length, i ++) {
+  point[i][j] = true
+}
+```
+3. 如果s[i] == s[j] 需要判断子串是否是回文
+``` js
+for(var j = 1; j < s.length; j ++) {
+  for(var i = 0; i < j; i ++) {
+    if(s[i] == s[j]) {
+      if(point[i + 1][j - 1] == undefined || point[i + 1][j - 1]) {
+        point[i][j] = true
+      } else {
+        point[i][j] = false
+      }
+    } else {
+      point[i][j] = false
+    }
+    if(point[i][j] && (j - i + 1) > max) {
+      max = j - i + 1
+      begin = i
+    }
+  }
+}
+```
+4. 返回
+``` js
+return s.substring(begin, begin + max)
+```
+时间复杂度为O(N*N)
+
+
+> 中心扩散
+也是状态转移方程式和临界值
+## 判断逻辑
+S[i...j] 为回文需要判断 S[i - 1 ... j + 1] 是否为回文
+## 临界值
+1. i > 0
+2. j < length
+## 代码思路
+1. 设置中心点
+``` js
+for(var i = 0; i < s.length; i ++) {
+  begin = i
+  end = i
+} 
+```
+
+2. 中心点可以为1个或2个
+``` js
+conut(i, i)
+count(i, i + 1)
+
+function(begin, end) {
+  while(begin >= 0 && end < len && s[begin] == s[end]) {
+    begin-- 
+    end++
+  }
+  return begin - end - 1
+}
+```
+
+
+
+# Z 字形变换
+思路创建一个二维数组 将字符串遍历分为两个过程
+过程 
+1. 从第一个开始向下放置 n-1 次 [j + 1, i]
+2. 斜向上放置 n - 1 次 [j - 1, i + 1]
+
+## 特殊情况 n = 1
+
+优化思路
+放置n个数组 代表n行   
+
+# 数字反转
+思路 数字的范围是在 2 32 次方以内, 而 javascript 是在 2 51 次方
+将数字转化成字符串
+
+好蠢啊
+
+反转就是对原数字 % 10 拿到最后一位 下次循环就乘 10
+
+
+
 
 
 
