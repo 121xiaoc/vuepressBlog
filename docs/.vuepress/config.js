@@ -50,7 +50,8 @@ function getFrontBaseSidebar (groupA, introductionA) {
         ['source-code', '源码实现'],
         ['webpack-demo', 'webpack实践'],
         ['leet-code', '每日力扣'],
-        ['browers', '浏览器相关']
+        ['browers', '浏览器相关'],
+        ['html', 'HTML'],
       ]
     }
   ]

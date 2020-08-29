@@ -34,4 +34,21 @@ Cookie的使用路径。如果设置为“/sessionWeb/”，则只有contextPath
 设置是否只能通过https来传递此条cookie
 
 
+## meta viewport
+移动端的布局与pc端不同,css上的1px不同于物理上的1px,分辨率越来越高,尺寸越来越小,意味着1个物理像素内有好几个像素
+
+window 对象有一个 devicePixelRadio 可以告诉我们在一个物理像素内包含了多少像素,但这个属性还有兼容性问题,我们不能完全信任它
+
+layout viewport: 表示网页的所有内容
+
+![avatar](./static/images/layout-viewport.jpeg)
+
+visual viewport: 可见的内容
+
+![avatar](./static/images/visual-viewport.png)
+
+移动端默认的浏览器宽度要大于实际屏幕的宽度
+``` html
+<meta name="viewport" content= "width=device-width, initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scale=0"/>
+```
 
