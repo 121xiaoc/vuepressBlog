@@ -15,13 +15,14 @@ module.exports = {
   themeConfig: {
     nav:[ // 导航栏配置
       {text: '前端基础', link: '/front-base/' },
-      {text: '算法题库', link: '/algorithm/'},
+      {text: '分享', link: '/share/'},
       {text: '每日积累', link: '/daily/' }
     ],
     sidebar: {
       '/blog/': getThemeSidebar('测试', '介绍'),
       '/front-base/': getFrontBaseSidebar('前端基础', '介绍'),
-      '/daily/': getDailySidebar('每日积累')
+      '/daily/': getDailySidebar('每日积累'),
+      '/share/': getShareSidebar('分享'),
     }
   }
 };
@@ -52,6 +53,7 @@ function getFrontBaseSidebar (groupA, introductionA) {
         ['leet-code', '每日力扣'],
         ['browers', '浏览器相关'],
         ['html', 'HTML'],
+        ['javascript', 'JS'],
       ]
     }
   ]
@@ -69,6 +71,21 @@ function getDailySidebar (groupA) {
         ['css', '我的CSS'],
         ['js', '我的JS'],
         ['project', '我的项目'],
+        ['ligic', '逻辑']
+      ]
+    }
+  ]
+}
+
+function getShareSidebar (groupA) {
+  return [
+    {
+      title: groupA,
+      collapsable: false,
+      sidebarDepth: 2,
+      children: [
+        ['', '介绍'],
+        ['browers', '分享浏览器'],
       ]
     }
   ]

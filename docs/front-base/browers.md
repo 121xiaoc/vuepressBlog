@@ -52,3 +52,16 @@ visual viewport: 可见的内容
 <meta name="viewport" content= "width=device-width, initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scale=0"/>
 ```
 
+## 类数组在 chrome 打印的问题
+
+本质上是V8引擎的代码判断问题
+
+一个类数组在控制台被打印成数组需要有两个属性 length 和 splice
+
+length 必需为是 number
+
+splice 必需为是 function
+
+
+
+

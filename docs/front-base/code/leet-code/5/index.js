@@ -1,27 +1,42 @@
-/**
- * @param {string} moves
- * @return {boolean}
- */
-var judgeCircle = function(moves) {
-  var result1 = 0
-  var result2 = 0
-  for(var i = 0; i < moves.length; i++) {
-    switch(moves[i]) {
-      case 'R':
-        result1 ++
-        break
-      case 'L':
-        result1 --
-        break
-      case 'U':
-        result2 ++
-        break
-      case 'D':
-        result2 --
-        break
-    }
-  }
-  return result1 == 0 && result2 == 0
-};
+console.log('1');
 
-console.log(judgeCircle("UD"))
+setTimeout(() => {
+  console.log('2');
+  Promise.resolve().then(() => {
+    console.log('3');
+  })
+  new Promise((resolve) => {
+    console.log('4');
+    resolve();
+  }).then(() => {
+    console.log('5')
+  })
+})
+
+Promise.reject().then(() => {
+  console.log('13');
+}, () => {
+  console.log('12');
+})
+
+new Promise((resolve) => {
+  console.log('7');
+  resolve();
+}).then(() => {
+  console.log('8')
+})
+
+setTimeout(() => {
+  console.log('9');
+  Promise.resolve().then(() => {
+    console.log('10');
+  })
+  new Promise((resolve) => {
+    console.log('11');
+    resolve();
+  }).then(() => {
+    console.log('12')
+  })
+})
+
+// 1 7 12 8 2 4  9 11 3 5 10 12
