@@ -185,4 +185,163 @@ JavaScript 引擎采用了对象晋升策略，也就是经过两次垃圾回收
 
  将标记过程分为一个个的子标记过程，同时 让垃圾回收标记和 JavaScript 应用逻辑交替进行，直到标记阶段完成，我们把这个算法称 为增量标记
 
+## 编译器和解释器
+了解 编译器、解释器、抽象语法树、字节码、即时编译器
+
+编译语言（C/C++,GO）在程序执行之前，需要编译器的编译，并且编译之后会保留机器能读懂的二进制文件
+
+解释语言（javascript）每次运行都需要通过解释器进行动态解释和执行
+
+V8 引擎既有解释器 又有编译器
+
+分解其执行流程
+1. 生成抽象语法树(AST)和执行上下文
+2. 生成字节码
+3. 执行代码
+一段代码被重复执行多次，这种就称 为热点代码 那么后台的编译器 TurboFan 就会把该段热点的字节码编译为高效的机器 码，然后当再次执行这段被优化的代码时，只需要执行编译后的机器码就可以了，这样就大 大提升了代码的执行效率。
+
+字节码配合解释器和编译器是最近一段时间很火的技术 这种技术称为即时编译
+
+#### JavaScript 的性能优化
+ V8 诞生之初，也出现过一系列针对 V8 而专门优化 JavaScript 性能的方案，比如 隐藏类、内联缓存等概念都是那时候提出来的，但是现在 优化的中心聚焦在单次脚本的执行时间和脚本的网络下载上，主要关注以下三点内容
+ 1. 单次脚本的执行速度
+ 2. 避免大的内联脚本，因为在解析 HTML 的过程中，解析和编译也会占用主线程
+ 3. 减少 JavaScript 文件的容量
+
+ ## 消息队列和事件循环
+ 流程
+ 1. 添加一个消息队列
+ 2. IO 线程中产生新任务添加到消息队列底部
+ 3. 渲染主线程会循环地从消息队列头部中读取数据任务，执行任务
+
+ 渲染进程中专门有一个 IO 线程用来接收其他进程传通过IPC传进来的数据，放到消息队列 渲染主线程就会读取这些队列中的任务
+
+#### 消息队列中的任务类型
+宏任务: 消息队列中的任务
+微任务: 每个宏任务中都包含了一个微任务队列
+
+页面上的点击就属性宏任务
+
+#### 解决单个任务执行时长过久的问题。
+JavaScript 可以通过回调功能来规避这种问题，也就是让要执行的 JavaScript 任务滞后执行
+
+### setTimeout 是如何实现的
+执行一段异步 JavaScript 代码，也是需要将执行任务添加到消息队列中。
+为了保证回调函数能在指定时间内执行，你不能将定时器的回调函数直接添加到消息队列中
+渲染进程会将该定时器的回调任务添加到延迟队列中
+设置一个定时器，JavaScript 引擎会返回一个定时器的 ID。那通常情况下，当一个定时器 的任务还没有被执行的时候，也是可以取消的，具体方法是调用clearTimeout 函数，并传 入需要取消的定时器的ID
+
+#### 使用setTimeout的一些注意点
+1. 如果当前任务执行时间过久，会影延迟到期定时器任务的执行
+2. 如果 setTimeout 存在嵌套调用，那么系统会设置最短时间间隔为 4 毫秒
+3. 未激活的页面，setTimeout 执行最小间隔是 1000 毫秒
+4. 延时执行时间有最大值
+5. 使用 setTimeout 设置的回调函数中的 this 不符合直觉
+
+### WebApi: XMLHttpRequest是怎么实现的
+![avatar](./static/images/share-browers-xmlHttpRequest.png)
+#### XMLHttpRequest 使用过程中的 坑
+1. 跨域问题
+2. HTTPS 混合内容的问题
+
+### 宏认为和微任务
+微任务：微任务可以在实时性和效率之间做一个有效的权衡
+
+宏任务
+1. 渲染事件(如解析 DOM、计算布局、绘制);
+2. 用户交互事件(如鼠标点击、滚动页面、放大缩小等)
+3. JavaScript 脚本执行事件;
+4. 网络请求完成、文件读写完成事件。
+
+思考 用户交互事件是宏任务吗
+``` js
+// 鼠标监听事件
+function displayDate(){
+	console.log('时间改变了')
+	document.getElementById("demo").innerHTML=Date();
+}
+function load(){
+  // 宏任务
+	setTimeout(() => {
+		console.log('回调函数')
+	}, 0)
+	
+	console.log('load 了')
+	var startTime = +new Date()
+	var nowDate = null
+	while(true) {
+		nowDate = +new Date()
+		if(nowDate - startTime > 1000 * 10) {
+      Promise.resolve().then(() => {
+				console.log('promise 的回调')
+			})
+			break
+		}
+	}
+	console.log('完成了')
+}
+```
+是宏任务 但是其优先级确比 setTimeout 高
+
+微任务
+MutationObserver 将响应函数改成异步调用，可以不用在每次 DOM 变化都触发 异步调用，而是等多次 DOM 变化后，一次触发异步调用
+
+MutationObserver 采用了“异步 + 微任务”的策略。
+1. 通过异步操作解决了同步操作的性能问题
+2. 通过微任务解决了实时性的问题。
+
+### promise
+#### 异步编程的问题
+代码逻辑不连续
+
+封装异步代码，让处理流程变得线性
+但又导致了 回调地狱
+
+#### Promise:消灭嵌套调用和多次错误处理
+
+### async/await
+用promise 消灭嵌套调用，但代码里依旧会包含太多的 then, 基于这个，ES7 引入了 async/await,这是 JavaScript 异步编程的一个重大改进,用同步代码的方式实现了异步访问资源的能力
+
+实现 async/await 基础之一就是生成器(Generator) 
+#### 生成器
+``` js
+function* genDemo() {
+    console.log(" 开始执行第一段 ")
+    yield 'generator 2'
+ 
+    console.log(" 开始执行第二段 ")
+    yield 'generator 2'
+ 
+    console.log(" 开始执行第三段 ")
+    yield 'generator 2'
+ 
+    console.log(" 执行结束 ")
+    return 'generator 2'
+}
+ 
+console.log('main 0')
+let gen = genDemo()
+console.log(gen.next().value)
+console.log('main 1')
+console.log(gen.next().value)
+console.log('main 2')
+console.log(gen.next().value)
+console.log('main 3')
+console.log(gen.next().value)
+console.log('main 4')
+```
+生成器的具体使用方式
+1. 在生成器函数内部执行一段代码，如果遇到 yield 关键字，将关键字后面的内容给外部，并暂停该函数的执行
+2. 外部函数可以通过 next 方法恢复函数的执行
+
+#### 协程
+协程是一种比线程更加轻量级的存在
+一个线程也可以拥有多个协程。最重要的是，协程不是被操作系统内核所管理，而完全是由程序所控制
+
+#### async
+根据 MDN 定义，async 是一个通过异步执行并隐式返回 Promise 作为结果的函数
+
+
+
+
 
