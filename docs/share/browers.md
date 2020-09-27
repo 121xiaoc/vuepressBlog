@@ -342,6 +342,86 @@ console.log('main 4')
 根据 MDN 定义，async 是一个通过异步执行并隐式返回 Promise 作为结果的函数
 
 
+## chrome 开发者工具
+是一组网页制作和调试的工具
 
+包含了 10 个功能面板，包括了 Elements、Console、Sources、NetWork、Performance、Memory、Application、Security、Audits 和 Layers。
+![avatar](./static/images/21-1.png)
+
+### 网络面板
+网络面板由控制器、过滤器、时间线、详细列表和下载信息概要这 5 个区域构成
+#### 控制器
+有 4 个功能
+1. 红色圆点的按钮，表示“开始 / 暂停抓包”
+2. “全局搜索”按钮
+3. Disable cache，即“禁止从 Cache 中加载资源”的功能
+4. Online 按钮，是“模拟 2G/3G”功能
+
+#### 过滤器
+网络面板中的过滤器，主要就是起过滤功能
+
+#### 抓图信息
+可以用来分析用户等待页面加载时间内所看到的内容，勾选面板上的“Capture screenshots”即可启用屏幕截图
+
+#### 时间线
+主要用来展示 HTTP、HTTPS、WebSocket 加载的状态和时间的一个关系
+
+#### 详细列表
+这个区域是最重要的，它详细记录了每个资源从发起请求到完成请求这中间所有过程的状态
+
+#### 下载信息概要
+你要重点关注下 DOMContentLoaded 和 Load 两个事件
+DOMContentLoaded： 这个事件发生后，说明页面已经构建好 DOM 了
+Load，说明浏览器已经加载了所有的资源（图像、样式表等）。
+
+### 网络面板中的详细列表的时间线
+#### Queuing
+排队的意思,导致请求处于排队状态的原因有很多
+1. 首先，页面中的资源是有优先级的
+2. 其次，我们前面也提到过，浏览器会为每个域名最多维护 6 个 TCP 连接
+3. 网络进程在为数据分配磁盘空间时，新的 HTTP 请求也需要短暂地等待磁盘分配结束。
+
+#### Stalled
+停滞的意思 
+
+#### Proxy Negotiation
+代理协商阶段，它表示代理服务器连接协商所用的时间
+
+#### Initial connection/SSL
+建立 TCP 连接所花费的时间
+
+#### Request sent 阶段
+常这个阶段非常快，因为只需要把浏览器缓冲区的数据发送出去就结束了
+
+#### Waiting
+接收服务器第一个字节的数据，第一字节时间
+
+### 优化
+#### 1. 排队时间过久
+大概率是由浏览器为每个域名最多维护 6 个连接导致的，基于这个原因，你就可以让 1 个站点下面的资源放在多个域名下面
+
+#### 2. 第一字节时间过久
+1. 服务器生成页面数据的时间过久
+2. 网络的原因
+3. 发送请求头时带上了多余的用户信息
+
+#### 3. Content Download 
+比如压缩、去掉源码中不必要的注释等方法
+
+
+## Javascript 是如何影响DOM树构建的
+### DOM 树是如何生成的
+一个叫HTML 解析器（HTMLParser）的模块，它负责将 HTML 字节流转换为 DOM 结构
+网络进程加载了多少数据，HTML 解析器便解析多少数据
+
+解析到 script 脚本标签时，其 DOM 树结构如下所示
+![avatar](./static/images/21-2.png)
+
+执行到 JavaScript 标签时，暂停整个 DOM 的解析，执行 JavaScript 代码，不过这里执行 JavaScript 时，需要先下载这段 JavaScript 代码 JavaScript 文件的下载过程会阻塞 DOM 解析
+
+如果 JavaScript 文件中没有操作 DOM 相关代码，就可以将该 JavaScript 脚本设置为异步加载，通过 async 或 defer 来标记代码 async 标志的脚本文件一旦加载完成，会立即执行；而使用了 defer 标记的脚本文件，需要在 DOMContentLoaded 事件之前执行
+
+### 总结
+我们知道了 JavaScript 会阻塞 DOM 生成，而样式文件又会阻塞 JavaScript 的执行，所以在实际的工程中需要重点关注 JavaScript 文件和样式表文件，使用不当会影响到页面性能的
 
 
